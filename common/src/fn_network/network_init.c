@@ -11,6 +11,10 @@
 #include "sp.h"
 #endif
 
+#ifdef __LYNX__
+#include "lynxfnio.h"
+#endif
+
 uint8_t network_init(void)
 {
   int8_t err = 0;
@@ -25,7 +29,13 @@ uint8_t network_init(void)
   }
 #endif
 
-
+#ifdef __LYNX__
+     err = fnio_init();
+    if (err == 0)
+        return(FN_ERR_NO_DEVICE);
+    else   
+        return(FN_ERR_OK);
+#endif
 
   return err;
 }

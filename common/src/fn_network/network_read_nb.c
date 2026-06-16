@@ -37,6 +37,10 @@
 #include "dw.h"
 #endif
 
+#ifdef __LYNX__
+#include "lynxfnio.h"
+#endif
+
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 
@@ -61,17 +65,16 @@ int16_t network_read_nb(const char *devicespec, uint8_t *buf, uint16_t len)
     const char *after;
 #endif
 
-#if defined(__ATARI__) || defined(_CMOC_VERSION_) || defined(__CBM__) || defined(__PMD85__) || defined(__ADAM__)
+#if defined(__ATARI__) || defined(_CMOC_VERSION_) || defined(__CBM__) || defined(__PMD85__) || defined(__ADAM__) || defined(__LYNX__)
     uint8_t unit = 0;
 #endif
-
 
     if (len == 0 || buf == NULL) {
 #if defined(__ATARI__)
         return -fn_error(132); // invalid command
 #elif defined(__APPLE2__)
         return -fn_error(SP_ERR_BAD_CMD);
-#elif defined(__CBM__)
+#elif defined(__CBM__) || defined(__LYNX__)
         return -FN_ERR_BAD_CMD;
 #elif defined(_CMOC_VERSION_) || defined(__PMD85__) || defined (__ADAM__)
         return -fn_error(132); // invalid command
@@ -88,7 +91,7 @@ int16_t network_read_nb(const char *devicespec, uint8_t *buf, uint16_t len)
     fn_bytes_read = 0;
     fn_device_error = 0;
 
-#if defined(__ATARI__) || defined(_CMOC_VERSION_) || defined(__PMD85__) || defined(__ADAM__)
+#if defined(__ATARI__) || defined(_CMOC_VERSION_) || defined(__PMD85__) || defined(__ADAM__) || defined(__LYNX__)
     unit = network_unit(devicespec);
 #elif defined(__CBM__)
     unit = getDeviceNumber(devicespec, &after);
@@ -99,6 +102,8 @@ int16_t network_read_nb(const char *devicespec, uint8_t *buf, uint16_t len)
 #elif defined(__APPLE2__)
     r = network_status(devicespec, &fn_network_bw, &fn_network_conn, &fn_network_error);
 #elif defined(__CBM__)
+    r = network_status(devicespec, &fn_network_bw, &fn_network_conn, &fn_network_error);
+#elif defined(__LYNX__)
     r = network_status(devicespec, &fn_network_bw, &fn_network_conn, &fn_network_error);
 #elif defined(_CMOC_VERSION_) || defined(__PMD85__) || defined (__ADAM__)
     r = network_status(devicespec, &fn_network_bw, &fn_network_conn, &fn_network_error); // TODO: Status return needs fixing.
@@ -128,6 +133,8 @@ int16_t network_read_nb(const char *devicespec, uint8_t *buf, uint16_t len)
 #ifdef __APPLE2__
     // need to validate this is only required for apple
     fetch_size = MIN(fetch_size, MAX_READ_SIZE);
+#elif defined(__LYNX__)
+    fetch_size = MIN(fetch_size, LYNX_FN_RECV_MAX);
 #endif
 
 #if defined(__ATARI__)
@@ -139,6 +146,8 @@ int16_t network_read_nb(const char *devicespec, uint8_t *buf, uint16_t len)
     cbm_read(unit + CBM_DATA_CHANNEL_0, buf, fetch_size);
 #elif defined(__ADAM__)
     network_read_adam(devicespec, buf, fetch_size);
+#elif defined(__LYNX__)
+    network_read_lynx)devicespec, buf, fetch_size);
 #endif
 
 #if defined(_CMOC_VERSION_) || defined(__PMD85__)
