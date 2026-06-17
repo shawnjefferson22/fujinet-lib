@@ -13,7 +13,8 @@
 #include <string.h>
 
 #include "lynxfnio.h"
-#include "fujinet_network.h"
+#include "fujinet-network-lynx.h"
+#include "fujinet-network.h"
 
 
 
@@ -31,10 +32,14 @@ uint8_t network_ioctl(uint8_t cmd, uint8_t aux1, uint8_t aux2, const char* devic
     uint8_t dev = _net_dev(devicespec);
 
     _net_cmd[0] = (char)cmd;
-    _net_cmd[1] = (char)aux1;
-    _net_cmd[2] = (char)aux2;
 
-    if (!_fnio_send_cmd(dev, _net_cmd, 3))
+    // Ignore the aux1 and aux2 bytes on Lynx
+    // and ignore the varags, not used
+
+	(void) aux1;
+	(void) aux2;
+
+    if (!_fnio_send_cmd(dev, _net_cmd, 1))
         return fn_error(fnio_error());
 
     return FN_ERR_OK;

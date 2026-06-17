@@ -12,11 +12,13 @@
 #include <stdbool.h>
 #include <string.h>
 
+#include "lynxfnio.h"
+#include "fujinet-network-lynx.h"
 #include "fujinet-network.h"
 
 
 /* Command / send buffer */
-static char _net_cmd[512];
+char _net_cmd[512];
 
 /*
  * Return the device ID for a given unit number (1-based).

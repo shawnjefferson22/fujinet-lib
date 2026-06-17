@@ -80,7 +80,7 @@ uint8_t _checksum(char *b, uint16_t len)
 
 uint8_t _serial_get_loop(char *b)
 {
-    clock_t start, now;   
+    clock_t start, now;
     start = clock();
 
     while (ser_get(b) == SER_ERR_NO_DATA) {
@@ -145,7 +145,7 @@ uint8_t fnio_send_buf(uint8_t dev, char *buf, uint16_t len)
     if (!_serial_get_loop(&b))
         return 0;
 
-    if ((uint8_t) b == FUJICMD_ACK)
+    if ((uint8_t) b == NETCMD_ACK)
         return 1;
 
     _fn_error = FNIO_ERR_SEND_CHK;
@@ -187,12 +187,12 @@ uint8_t fnio_recv_buf(char *buf, uint16_t *len)
     /* verify */
     ck = _checksum(buf, *len);
     if ((uint8_t) b == ck) {
-        ser_put((char)FUJICMD_ACK);
+        ser_put((char)NETCMD_ACK);
         ser_get(&b); /* discard echo */
         return 1;
     } else {
         _fn_error = FNIO_ERR_RECV_CHK;
-        ser_put((char) FUJICMD_NAK);
+        ser_put((char) NETCMD_NAK);
         ser_get(&b); /* discard echo */
         *len = 0;
         return 0;
@@ -211,7 +211,7 @@ uint8_t fnio_recv_ack(void)
 
     if (!_serial_get_loop(&b)) return 0;
 
-    if (b == FUJICMD_ACK)
+    if (b == NETCMD_ACK)
         return 1;
 
     _fn_error = FNIO_ERR_GENERAL;

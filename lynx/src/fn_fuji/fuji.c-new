@@ -15,47 +15,8 @@
 #include "../../fujinet-fuji.h"
 #include "lynxfnio.h"
 
-/* ------------------------------------------------------------------ */
-/* Module-private state                                                 */
-/* ------------------------------------------------------------------ */
 
-/* Command / scratch buffer shared by all fuji functions */
-static char _fn_cmd[512];
-static uint16_t _fn_recv_len;
 
-/* Appkey context set via fuji_set_appkey_details() */
-static uint16_t _appkey_creator_id = 0;
-static uint8_t  _appkey_app_id     = 0;
-static uint8_t  _appkey_keysize    = 0; /* 0 = DEFAULT (64 bytes) */
-
-/* ------------------------------------------------------------------ */
-/* Public globals required by fujinet-fuji.h                            */
-/* ------------------------------------------------------------------ */
-
-FNStatus _fuji_status;
-uint8_t  fn_default_timeout = 0x0F;
-
-/* ------------------------------------------------------------------ */
-/* Internal helpers                                                     */
-/* ------------------------------------------------------------------ */
-
-/*
- * Send a Fuji-device command from _fn_cmd and wait for ACK.
- */
-static uint8_t _fuji_cmd(uint16_t len)
-{
-    return _fnio_send_cmd(FUJI_DEVICEID_FUJINET, _fn_cmd, len);
-}
-
-/*
- * Send a Fuji-device command from _fn_cmd and receive a data response
- * into `out`.  Returns 1 on success; `out_len` set to bytes received.
- */
-static uint8_t _fuji_cmd_recv(uint16_t len, char *out, uint16_t *out_len)
-{
-    return _fnio_send_cmd_recv(FUJI_DEVICEID_FUJINET, _fn_cmd, len,
-                               out, out_len);
-}
 
 /* ------------------------------------------------------------------ */
 /* fuji_error                                                           */
@@ -368,43 +329,6 @@ bool fuji_set_directory_position(uint16_t pos)
     return (_fuji_cmd(3) != 0);
 }
 
-/* ------------------------------------------------------------------ */
-/* Device management                                                    */
-/* ------------------------------------------------------------------ */
-
-bool fuji_enable_device(uint8_t d)
-{
-    _fn_cmd[0] = FUJICMD_ENABLE_DEVICE;
-    _fn_cmd[1] = (char)d;
-    return (_fuji_cmd(2) != 0);
-}
-
-bool fuji_disable_device(uint8_t d)
-{
-    _fn_cmd[0] = FUJICMD_DISABLE_DEVICE;
-    _fn_cmd[1] = (char)d;
-    return (_fuji_cmd(2) != 0);
-}
-
-bool fuji_reset(void)
-{
-    _fn_cmd[0] = FUJICMD_RESET;
-    return (_fuji_cmd(1) != 0);
-}
-
-bool fuji_set_boot_config(uint8_t toggle)
-{
-    _fn_cmd[0] = FUJICMD_CONFIG_BOOT;
-    _fn_cmd[1] = (char)toggle;
-    return (_fuji_cmd(2) != 0);
-}
-
-bool fuji_set_boot_mode(uint8_t mode)
-{
-    _fn_cmd[0] = FUJICMD_SET_BOOT_MODE;
-    _fn_cmd[1] = (char)mode;
-    return (_fuji_cmd(2) != 0);
-}
 
 bool fuji_copy_file(uint8_t src_slot, uint8_t dst_slot, char *copy_spec)
 {
@@ -432,94 +356,6 @@ bool fuji_enable_udpstream(uint16_t port, char *host)
     return false;
 }
 
-/* ------------------------------------------------------------------ */
-/* Status                                                               */
-/* ------------------------------------------------------------------ */
-
-bool fuji_status(FNStatus *status)
-{
-    uint16_t len;
-
-    _fn_cmd[0] = FUJICMD_STATUS;
-    if (!_fuji_cmd_recv(1, (char *)status, &len)) return false;
-
-    return true;
-}
-
-/* ------------------------------------------------------------------ */
-/* App Keys                                                             */
-/* ------------------------------------------------------------------ */
-
-void fuji_set_appkey_details(uint16_t creator_id, uint8_t app_id,
-                              enum AppKeySize keysize)
-{
-    _appkey_creator_id = creator_id;
-    _appkey_app_id     = app_id;
-    _appkey_keysize    = (uint8_t)keysize;
-}
-
-bool fuji_read_appkey(uint8_t key_id, uint16_t *count, uint8_t *data)
-{
-    uint16_t len;
-
-    /* OPEN_APPKEY */
-    _fn_cmd[0] = FUJICMD_OPEN_APPKEY;
-    _fn_cmd[1] = (char)(_appkey_creator_id & 0xFF);
-    _fn_cmd[2] = (char)(_appkey_creator_id >> 8);
-    _fn_cmd[3] = (char)_appkey_app_id;
-    _fn_cmd[4] = (char)_appkey_keysize;
-    _fn_cmd[5] = (char)key_id;
-    if (!_fuji_cmd(6)) return false;
-
-    /* READ_APPKEY */
-    _fn_cmd[0] = FUJICMD_READ_APPKEY;
-    if (!_fuji_cmd_recv(1, (char *)data, &len)) return false;
-
-    *count = len;
-
-    /* CLOSE_APPKEY */
-    _fn_cmd[0] = FUJICMD_CLOSE_APPKEY;
-    _fuji_cmd(1); /* best-effort; ignore result */
-
-    return true;
-}
-
-bool fuji_write_appkey(uint8_t key_id, uint16_t count, uint8_t *data)
-{
-    /* OPEN_APPKEY */
-    _fn_cmd[0] = FUJICMD_OPEN_APPKEY;
-    _fn_cmd[1] = (char)(_appkey_creator_id & 0xFF);
-    _fn_cmd[2] = (char)(_appkey_creator_id >> 8);
-    _fn_cmd[3] = (char)_appkey_app_id;
-    _fn_cmd[4] = (char)_appkey_keysize;
-    _fn_cmd[5] = (char)key_id;
-    if (!_fuji_cmd(6)) return false;
-
-    /* WRITE_APPKEY */
-    _fn_cmd[0] = FUJICMD_WRITE_APPKEY;
-    memcpy(&_fn_cmd[1], data, count);
-    if (!_fuji_cmd((uint16_t)(count + 1))) return false;
-
-    /* CLOSE_APPKEY */
-    _fn_cmd[0] = FUJICMD_CLOSE_APPKEY;
-    _fuji_cmd(1);
-
-    return true;
-}
-
-/* ------------------------------------------------------------------ */
-/* GUID                                                                 */
-/* ------------------------------------------------------------------ */
-
-bool fuji_generate_guid(char *buffer)
-{
-    uint16_t len;
-
-    _fn_cmd[0] = FUJICMD_GENERATE_GUID;
-    if (!_fuji_cmd_recv(1, buffer, &len)) return false;
-
-    return true;
-}
 
 /* ------------------------------------------------------------------ */
 /* Base64                                                               */

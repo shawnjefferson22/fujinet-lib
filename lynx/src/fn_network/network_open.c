@@ -13,7 +13,8 @@
 #include <string.h>
 
 #include "lynxfnio.h"
-#include "fujinet_network.h"
+#include "fujinet-network-lynx.h"
+#include "fujinet-network.h"
 
 
 /*
@@ -43,7 +44,7 @@ uint8_t network_open(const char* devicespec, uint8_t mode, uint8_t trans)
     const char *url = _net_url(devicespec);
     uint16_t ulen = strlen(url);
 
-    _net_cmd[0] = FUJICMD_OPEN;
+    _net_cmd[0] = NETCMD_OPEN;
     _net_cmd[1] = mode;
     _net_cmd[2] = trans;
     memcpy(&_net_cmd[3], url, ulen + 1); /* include NUL */

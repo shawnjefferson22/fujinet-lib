@@ -39,6 +39,7 @@
 
 #ifdef __LYNX__
 #include "lynxfnio.h"
+#include "fujinet-network-lynx.h"
 #endif
 
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
@@ -147,7 +148,7 @@ int16_t network_read_nb(const char *devicespec, uint8_t *buf, uint16_t len)
 #elif defined(__ADAM__)
     network_read_adam(devicespec, buf, fetch_size);
 #elif defined(__LYNX__)
-    network_read_lynx)devicespec, buf, fetch_size);
+    network_read_lynx(devicespec, buf, fetch_size);
 #endif
 
 #if defined(_CMOC_VERSION_) || defined(__PMD85__)

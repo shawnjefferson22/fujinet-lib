@@ -13,7 +13,7 @@
 #include <string.h>
 
 #include "lynxfnio.h"
-#include "fujinet_network.h"
+#include "fujinet-network.h"
 
 
 
@@ -21,9 +21,9 @@
  * Convert device specific error in code to FujiNet Network library error, agnostic of device.
  * Library code calls this when it encounters an error to return value applications should use.
  */
-uint8_t fn_error(uint8_t code) 
+uint8_t fn_error(uint8_t code)
 {
-    fn_device_error = code;    
+    fn_device_error = code;
     switch(code) {
         case FNIO_ERR_NONE:
             return (FN_ERR_OK);

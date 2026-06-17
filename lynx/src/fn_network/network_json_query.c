@@ -13,7 +13,8 @@
 #include <string.h>
 
 #include "lynxfnio.h"
-#include "fujinet_network.h"
+#include "fujinet-network-lynx.h"
+#include "fujinet-network.h"
 
 
 
@@ -23,7 +24,7 @@
  * @param  query pointer to string containing json path to query, e.g. "/path/field". No need to add device drive.
  * @param  s pointer to receiving string, nul terminated, if no data was retrieved, sets it to an empty string
  * @return Bytes read, or negative values represent fujinet-network error code (See FN_ERR_* values)
- * 
+ *
  * Assumes an open and parsed json.
  */
 int16_t network_json_query(const char *devicespec, const char *query, char *s)
@@ -32,7 +33,7 @@ int16_t network_json_query(const char *devicespec, const char *query, char *s)
     uint16_t qlen = strlen(query);
     uint16_t rlen;
 
-    _net_cmd[0] = FUJICMD_JSON_QUERY;
+    _net_cmd[0] = NETCMD_JSON_QUERY;
     memcpy(&_net_cmd[1], query, qlen + 1);
 
     if (!_fnio_send_cmd_recv(dev, _net_cmd, (qlen + 2), s, &rlen)) {

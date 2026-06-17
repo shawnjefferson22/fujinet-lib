@@ -13,6 +13,7 @@
 #include <string.h>
 
 #include "lynxfnio.h"
+#include "fujinet-network-lynx.h"
 #include "fujinet-network.h"
 
 
@@ -26,7 +27,7 @@ uint8_t network_close(const char* devicespec)
 {
    uint8_t dev = _net_dev(devicespec);
 
-    _net_cmd[0] = FUJICMD_CLOSE;
+    _net_cmd[0] = NETCMD_CLOSE;
     if (!_fnio_send_cmd(dev, _net_cmd, 1))
         return fn_error(fnio_error());
 

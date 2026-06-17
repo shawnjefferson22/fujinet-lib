@@ -13,7 +13,9 @@
 #include <string.h>
 
 #include "lynxfnio.h"
-#include "fujinet_network.h"
+#include "fujinet-network-lynx.h"
+#include "fujinet-network.h"
+#include "fujinet-fuji.h"
 
 
 
@@ -22,10 +24,19 @@
  * @param  devicespec pointer to device specification, e.g. "N1:HTTPS://fujinet.online/"
  * @param  mode The mode to set
  * @return fujinet-network error code (See FN_ERR_* values)
- * 
+ *
  * Assumes an open connection.
  */
 uint8_t network_http_set_channel_mode(const char *devicespec, uint8_t mode)
 {
-  return network_ioctl(FUJICMD_CONTROL, mode, 0, devicespec);
+	uint8_t dev = _net_dev(devicespec);
+
+
+    _net_cmd[0] = NETCMD_CHANNEL_MODE;
+    _net_cmd[1] = mode;
+
+    if (!_fnio_send_cmd(dev, _net_cmd, 2))
+		return fn_error(fnio_error());
+
+    return FN_ERR_OK;
 }

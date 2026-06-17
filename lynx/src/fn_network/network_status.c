@@ -13,7 +13,8 @@
 #include <string.h>
 
 #include "lynxfnio.h"
-#include "fujinet_network.h"
+#include "fujinet-network-lynx.h"
+#include "fujinet-network.h"
 
 
 
@@ -31,7 +32,7 @@ uint8_t network_status(const char *devicespec, uint16_t *bw, uint8_t *c, uint8_t
     uint16_t rlen;
     uint8_t  status[4];
 
-    _net_cmd[0] = FUJICMD_STATUS;
+    _net_cmd[0] = NETCMD_STATUS;
     if (!_fnio_send_cmd_recv(dev, _net_cmd, 1, (char *)status, &rlen)) {
         return fn_error(fnio_error());
     }
