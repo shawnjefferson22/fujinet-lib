@@ -23,6 +23,7 @@ CURRENT_PLATFORM_cbm610 := commodore
 CURRENT_PLATFORM_vic20 := commodore
 
 CURRENT_PLATFORM_coco := coco
+CURRENT_PLATFORM_dragon := coco
 
 CURRENT_PLATFORM_pmd85 := pmd85
 

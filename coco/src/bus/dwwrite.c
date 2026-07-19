@@ -9,7 +9,6 @@
 #include <coco.h>
 #include "dw.h"
 
-
 byte dwwrite(byte *s, int l)
 {
     asm
@@ -17,7 +16,11 @@ byte dwwrite(byte *s, int l)
         pshs x,y
         ldx :s
         ldy :l
+#ifdef DRAGON
+        jsr [0xFA00]
+#else        
         jsr [0xD941]
+#endif
         tfr cc,d
         puls y,x
     }

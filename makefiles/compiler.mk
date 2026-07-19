@@ -4,6 +4,11 @@ ifeq ($(CURRENT_TARGET),coco)
 
 -include makefiles/compiler-cmoc.mk
 
+else ifeq ($(CURRENT_TARGET),dragon)
+
+-include makefiles/compiler-cmoc.mk
+CFLAGS += -DDRAGON
+
 else ifeq ($(CURRENT_TARGET),apple2gs)
 
 -include makefiles/compiler-orca.mk
